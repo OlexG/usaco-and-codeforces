@@ -7,95 +7,87 @@
 using namespace std;
 int n;
 int m;
-struct edge {
-  long long w;
-  long long c;
-};
 int arr[100001];
+int groups[100001];
+int used[100001];
+vector<int> con[100001];
+bool custsort(pair<pair<int, int>, long long> a, pair<pair<int, int>, long long> b){
+    return a.second > b.second;
+}
 
-vector<vector<edge>> tree;
-
-void gencomps(int comps[], int used[], long long maxW, int counter, int curr){
-    if (used[curr] != 1){
-        used[curr] = 1;
-        comps[curr] = counter;
-        for (int x = 0; x < tree[curr].size(); x++){
-            if (tree[curr][x].w >= maxW && used[tree[curr][x].c] != 1){
-                gencomps(comps, used, maxW, counter, tree[curr][x].c);
-            }
+void dfs(int cur, int gr){
+    groups[cur] = gr;
+    used[cur] = 2;
+    for (int x = 0; x < con[cur].size(); x++){
+        if (used[con[cur][x]] == 1){
+            dfs(con[cur][x], gr);
         }
     }
 }
+
 int main(){
     ifstream in("wormsort.in");
     ofstream out("wormsort.out");
     in >> n;
     in >> m;
+    vector<pair<pair<int , int>, long long>> wormholes;
     int temp;
-    for (int x = 0; x < n; x ++){
-        vector<edge> em;
+    for (int x = 0; x < n; x++){
         in >> temp;
         arr[x] = temp - 1;
-        tree.push_back(em);
     }
-    bool need = false;
-    for (int x = 0; x < n; x ++){
-        if (arr[x] != x){
-            need = true;
-        }
-    }
-    if (need){
-    int one;
-    int two;
-    int three;
-    edge cur;
+
+    int one, two;
+    long long three;
     for (int x = 0; x < m; x++){
-        in >> one;
-        in >> two;
-        in >> three;
-        cur.w = three;
-        cur.c = two - 1;
-        tree[one - 1].push_back(cur);
-        cur.c = one - 1;
-        tree[two - 1].push_back(cur);
+        in >> one >> two >> three;
+        wormholes.push_back(make_pair(make_pair(one - 1, two - 1), three));
     }
-    long long mi = 0;
-    long long ma = 1000000001;
-    long long w;
-    while (mi < ma){
-        w = (mi + ma + 1)/2;
 
-        int comps[n];
-        int used[n];
+    long long small = 0;
+    long long large = 1000000001;
+    while(small < large){
+        long long cur = (small + large + 1)/2;
         for (int x = 0; x < n; x++){
-            comps[x] = -1;
-            used[x] = -1;
+            used[x] = 1;
+            groups[x] = -1;
+            con[x].clear();
         }
-        for(int x = 1; x < n + 1; x ++){
-
-            if (used[x - 1] != 1){
-
-                gencomps(comps, used,w , x, x - 1);
+        for (int x = 0; x < m; x++){
+            if (wormholes[x].second >= cur){
+                con[wormholes[x].first.first].push_back(wormholes[x].first.second);
+                con[wormholes[x].first.second].push_back(wormholes[x].first.first);
             }
         }
-        bool worked = true;
+        int gr = 1;
         for (int x = 0; x < n; x++){
-            if (comps[arr[x]] != comps[x]){
-                worked = false;
+            if (used[x] == 1){
+                dfs(x, gr);
+                gr++;
             }
         }
-        if (worked){
-            mi = w;
+        bool answer = true;
+        for (int x = 0; x < n; x++){
+            //cout << groups[x] << " ";
+            if (arr[x] != x){
+                if (groups[arr[x]] != groups[x]){
+                    answer = false;
+                }
+            }
+        }
+        if (answer){
+            small = cur;
         }
         else{
-            ma = w - 1;
+            large = cur - 1;
         }
-
     }
-    out << mi << "\n";
+    if (small == 1000000001){
+        out << "-1\n";
     }
     else{
-        out << -1 << "\n";
+        out << small << endl;
     }
+
 
 }

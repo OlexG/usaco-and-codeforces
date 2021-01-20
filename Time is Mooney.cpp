@@ -7,11 +7,9 @@
 #include <vector>
 using namespace std;
 
-double n = 100000;
-double sum = 0;
+int n, m, c;
+
 int main(){
-    for (double x = 1; x < n/2; x++){
-        sum += (n/x);
-    }
-    cout << sum << "\n";
+    cin >> n >> m >> c;
+
 }

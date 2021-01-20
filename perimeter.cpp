@@ -18,41 +18,24 @@ using namespace std;
 int n;
 int dx[4] = {-1, 0, 1, 0};
 int dy[4] = {0, 1, 0, -1};
-char arr[1000][1000];
-int checked[1000][1000];
-int area = 0;
-int cura = 0;
-int curp = 0;
-int perimeter = 0;
-void rec(int x, int y){
-
-    if (checked[x][y]){
-        checked[x][y] = 0;
-        cura = cura + 1;
-        curp = curp + 4;
-        int changex, changey;
-        for (int z = 0; z < 4; z ++){
-            changex = x + dx[z];
-            changey = y + dy[z];
-            if (changex >= 0 && changex <= n && changey >= 0 && changey < n && arr[changex][changey] == '#'){
-                curp = curp - 1;
-            }
+int arr[1000][1000];
+int used[1000][1000];
+int ca = 0;
+int cpe = 0;
+void dfs(int curx, int cury){
+    used[curx][cury] = 2;
+    ca += 1;
+    for (int x = 0; x < 4; x++){
+        if (curx + dx[x] >= n || cury + dy[x] >= n || cury + dy[x] < 0 || curx + dx[x] < 0){
+            cpe++;
         }
-        for (int z = 0; z < 4; z ++){
-            changex = x + dx[z];
-            changey = y + dy[z];
-            if (changex >= 0 && changex <= n && changey >= 0 && changey < n && arr[changex][changey] == '#'){
-                rec(changex, changey);
-            }
+        else if (arr[curx + dx[x]][cury + dy[x]] == 1){
+            cpe++;
         }
-    }
-    if (cura > area){
-        area = cura;
-        perimeter = curp;
-    }
-    if (cura == area){
-        if (curp < perimeter){
-            perimeter = curp;
+        else{
+            if (used[curx + dx[x]][cury + dy[x]] == 1){
+                dfs(curx + dx[x], cury + dy[x]);
+            }
         }
     }
 }
@@ -60,23 +43,38 @@ int main(){
     ifstream in("perimeter.in");
     ofstream out("perimeter.out");
     in >> n;
-    for (int x = 0; x < n; x ++){
-        for (int y = 0; y < n; y ++){
-            in >> arr[x][y];
-            checked[x][y] = 1;
+    char temp;
+    for (int x = 0; x < n; x++){
+        for (int y = 0; y < n; y++){
+            in >> temp;
+            if (temp == '#'){
+                arr[x][y] = 2;
+            }
+            else{
+                arr[x][y] = 1;
+            }
+            used[x][y] = 1;
         }
     }
-    for (int x = 0; x < n; x ++){
-        for (int y = 0; y < n; y ++){
-            if (checked[x][y] && arr[x][y] == '#'){
-                cura = 0;
-                curp = 0;
-                rec(x, y);
-
+    int ba = 0;
+    int bp = 0;
+    for (int x = 0; x < n; x++){
+        for (int y = 0; y < n; y++){
+            if (used[x][y] == 1 && arr[x][y] == 2){
+                ca = 0;
+                cpe = 0;
+                dfs(x, y);
+                if (ca > ba){
+                    ba = ca;
+                    bp = cpe;
+                }
+                else if (ca == ba){
+                    bp = min(bp, cpe);
+                }
             }
         }
     }
-    out << area << " " << perimeter << "\n";
+    out << ba << " " << bp << "\n";
 
 
 

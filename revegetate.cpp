@@ -9,58 +9,68 @@ using namespace std;
 
 int n, m;
 
-string answer = "1";
-int c[100001];
-vector<int> mn[100001];
+vector<pair<int, char>> cons[100001];
+int paints[100001];
+int used[100001];
+bool answer = true;
 void dfs(int cur, int mark){
-    if (!c[cur]){
-        c[cur] = mark;
-        for (int x = 0; x < mn[cur].size(); x ++){
-            dfs(mn[cur][x], mark);
+    used[cur] = 2;
+    paints[cur] = mark;
 
+    for (int x = 0; x < cons[cur].size(); x++){
+        if (cons[cur][x].second == 'D' && mark == paints[cons[cur][x].first] && paints[cons[cur][x].first] != -1){
+            answer = false;
+        }
+        if (cons[cur][x].second == 'S' && mark != paints[cons[cur][x].first] && paints[cons[cur][x].first] != -1){
+            answer = false;
+        }
+        if (paints[cons[cur][x].first] == -1 && used[cons[cur][x].first] == 1){
+            if (cons[cur][x].second == 'D'){
+                dfs(cons[cur][x].first, (mark + 1)%2);
+            }
+            else{
+                dfs(cons[cur][x].first, mark);
+            }
         }
     }
 }
 int main(){
-
     ifstream in("revegetate.in");
     ofstream out("revegetate.out");
     in >> n >> m;
-    char one;
-    int two;
-    int three;
-
-
-
-    for (int x =0; x < m; x ++){
-        in >> one >> two >> three;
-        mn[two - 1].push_back(three - 1);
-        mn[three - 1].push_back(two - 1);
-
+    int coms = 0;
+    char a;
+    int b;
+    int c;
+    for (int x = 0; x < m; x++){
+        in >> a >> b >> c;
+        cons[b - 1].push_back(make_pair(c - 1, a));
+        cons[c - 1].push_back(make_pair(b - 1, a));
     }
     for (int x = 0; x < n; x++){
-        dfs(x, x + 1);
+        paints[x] = -1;
+        used[x] = 1;
     }
-    int cur = 0;
-    sort(c, c+n);
     for (int x = 0; x < n; x++){
-
-        if (cur != c[x]){
-            cur = c[x];
-            answer = answer + "0";
+        if (used[x] == 1){
+            coms++;
+            dfs(x, 0);
         }
     }
-
-
-
-
-
-
-
-    out <<answer<< "\n";
-
-
-
-
+    if (answer){
+        out << "1";
+        for (int x = 0; x < coms; x++){
+            out << "0";
+        }
+        for (int x = 0; x < n; x++){
+            if (used[x] == -1){
+                out << "0";
+            }
+        }
+        out << "\n";
+    }
+    else{
+        out << "0\n";
+    }
 
 }
