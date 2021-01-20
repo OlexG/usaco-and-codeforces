@@ -3,94 +3,69 @@
 #include <iostream>
 #include <math.h>
 #include <algorithm>
+#include<bits/stdc++.h>
 #include <vector>
 using namespace std;
 
 int n;
+int ocounter[2500];
+int counter[2500];
+int used[2500];
+vector<int> c[2500];
 
-vector<vector<int>> rooms;
-vector<int> arr;
-int recurse(vector<int> arr, int room, int v[], int total, int prevroom){
-
-    for (int x = 0; x < rooms[room].size(); x ++){
-        if (v[rooms[room][x]] == 0){
-            if (arr[rooms[room][x]] + 1 == 12){
-                if (rooms[room][x] != prevroom){
-                    v[rooms[room][x]] = 1;
-                    arr[rooms[room][x]] = arr[rooms[room][x]] + 1;
-                    return recurse(arr, rooms[room][x], v, total + 1, room);
-                }
-            }
-            else{
-            if (rooms[room][x] != prevroom){
-                if (arr[rooms[room][x]] == 12){
-                    arr[rooms[room][x]] = 1;
-                }
-                else{
-                    arr[rooms[room][x]] += 1;
-                }
-                return recurse(arr, rooms[room][x], v, total, room);
-            }
-            }
+void dfs(int cur, int prev){
+    counter[cur]++;
+    used[cur] = 2;
+    /*cout << cur << " " << counter[cur] << "\n";
+    if (prev != -1){
+        cout << prev << " " << counter[prev] << " this is the previous\n";
+    }*/
+    for (int x = 0; x < c[cur].size(); x++){
+        if (used[c[cur][x]] == 1){
+            dfs(c[cur][x], cur);
         }
     }
-    if (v[prevroom] == 0){
-            if (arr[prevroom] + 1 == 12){
-
-                    v[prevroom] = 1;
-                    arr[prevroom] = arr[prevroom] + 1;
-                    return recurse(arr, prevroom, v, total + 1, room);
-
-            }
-            else{
-
-                if (arr[prevroom] == 12){
-                    arr[prevroom] = 1;
-                }
-                else{
-                    arr[prevroom] += 1;
-                }
-                return recurse(arr, prevroom, v, total, room);
-
-            }
+    if (prev != -1){
+        int add = 12 - counter[cur];
+        counter[cur] += add;
+        counter[prev] += (add + 1);
+        if (counter[prev] > 12){
+            counter[prev] = 1 + counter[prev] - 13;
         }
-    return total;
+    }
+
 }
 int main(){
     ifstream in("clocktree.in");
     ofstream out("clocktree.out");
-
     in >> n;
-    int num;
-    vector<int> em;
-    for (int x = 0; x < n; x ++){
-        in >> num;
-        arr.push_back(num);
-        rooms.push_back(em);
+    for (int x = 0; x < n; x++){
+        in >> ocounter[x];
+        counter[x] = ocounter[x];
+        used[x] = 1;
     }
-    int numone;
-    int numtwo;
-    for (int x = 0; x < n - 1; x ++){
-        in >> numone;
-        in >> numtwo;
-        rooms[numone - 1].push_back(numtwo - 1);
-        rooms[numtwo - 1].push_back(numone - 1);
+    int one, two;
+    for (int x = 0; x < n - 1; x++){
+        in >> one >> two;
+        c[one - 1].push_back(two - 1);
+        c[two - 1].push_back(one - 1);
     }
     int answer = 0;
-
-    for (int x = 0; x < n - 1; x ++){
-         int v[n];
-    for (int x = 0; x < n; x ++){
-        v[x] = 0;
-    }
-
-        if (recurse(arr, x, v, 0, 0) == n){
-            answer= answer + 1;
-
+    for (int x = 0; x < n; x++){
+        for (int y = 0; y < n; y++){
+            counter[y] = ocounter[y];
+            used[y] = 1;
+        }
+        counter[x] -= 1;
+        dfs(x, -1);
+        /*for (int x = 0; x < n; x++){
+            cout << counter[x] << " ";
+        }
+        cout << "\n";*/
+        if (counter[x] == 12 || counter[x] == 1){
+            answer += 1;
         }
     }
     out << answer << "\n";
-
-
 
 }
